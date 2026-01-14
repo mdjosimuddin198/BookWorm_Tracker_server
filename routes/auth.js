@@ -14,7 +14,7 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 
 // Protected route
-router.get("/profile", getProfile);
+router.get("/profile", authMiddleware, getProfile);
 
 // Logout
 router.post("/logout", (req, res) => {

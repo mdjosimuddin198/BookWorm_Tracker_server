@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import bookRoutes from "./routes/books.js";
+import reviewRoutes from "./routes/review.js";
+import shelfRoutes from "./routes/shelf.js";
 dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -21,6 +23,8 @@ await connectDB();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
+app.use("/api/review", reviewRoutes);
+app.use("/api/shelf", shelfRoutes);
 
 app.get("/", (req, res) => {
   res.send("bookworm server is running successfully...");

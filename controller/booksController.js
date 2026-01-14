@@ -3,12 +3,23 @@ import connectDB from "../config/db.js";
 
 export const getBooks = async (req, res) => {
   try {
-    const db = await connectDB();
-    const books = await db.collection("books").find().toArray();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
 
-    res.json(books);
+    const db = await connectDB();
+
+    const results = await db
+      .collection("books")
+      .find()
+      .skip(startIndex)
+      .limit(limit)
+      .toArray();
+
+    res.json(results);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -146,7 +157,7 @@ export const deleteBook = async (req, res) => {
     const db = await connectDB();
     const result = await db.collection("books").deleteOne({
       _id: new ObjectId(id),
-      userId: req.userId, // 🔐 owner only
+      userId: req.userId, //
     });
 
     if (result.deletedCount === 0) {
