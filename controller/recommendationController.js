@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 
 export const getRecommendation = async (req, res) => {
   try {
-    const { email } = req.query; // query param used: ?email=user@gmail.com
+    const { email } = req.query; // query param: ?email=user@gmail.com
     if (!email) return res.status(400).json({ message: "Email is required" });
 
     const db = await connectDB();
@@ -23,10 +23,10 @@ export const getRecommendation = async (req, res) => {
 
     const excludedBooks = [...readBooks, ...wantBooks, ...readingBooks];
 
+    // ---------------------------
     // Personalized recommendation
-
+    // ---------------------------
     if (readBooks.length >= 3) {
-      // Get all read book documents
       const readBookDocs = await books
         .find({ _id: { $in: readBooks } })
         .toArray();
@@ -52,7 +52,6 @@ export const getRecommendation = async (req, res) => {
         .limit(20)
         .toArray();
 
-      // Add "why" explanation
       const recommendations = candidates.map((book) => {
         const matchedGenres = (book.genres || []).filter((g) =>
           topGenres.includes(g)
@@ -65,11 +64,18 @@ export const getRecommendation = async (req, res) => {
         };
       });
 
-      return res.json(recommendations.slice(0, 12));
+      // Remove duplicates if any (safety)
+      const uniqueMap = new Map();
+      recommendations.forEach((book) =>
+        uniqueMap.set(book._id.toString(), book)
+      );
+
+      return res.json(Array.from(uniqueMap.values()).slice(0, 12));
     }
 
+    // ---------------------------
     // Fallback: user read < 3 books
-
+    // ---------------------------
     const popularBooks = await books
       .find({ _id: { $nin: excludedBooks } })
       .sort({ rating: -1, shelfCount: -1 })
@@ -79,11 +85,16 @@ export const getRecommendation = async (req, res) => {
     const randomBooks = await books
       .aggregate([
         { $match: { _id: { $nin: excludedBooks } } },
-        { $sample: { size: 5 } },
+        { $sample: { size: 10 } }, // sample more for better selection
       ])
       .toArray();
 
-    const fallbackBooks = [...popularBooks, ...randomBooks].map((book) => ({
+    // Combine and remove duplicates
+    const combined = [...popularBooks, ...randomBooks];
+    const uniqueMap = new Map();
+    combined.forEach((book) => uniqueMap.set(book._id.toString(), book));
+
+    const fallbackBooks = Array.from(uniqueMap.values()).map((book) => ({
       ...book,
       why: "Popular book or recommended for new readers",
     }));
