@@ -8,6 +8,7 @@ import bookRoutes from "./routes/books.js";
 import reviewRoutes from "./routes/review.js";
 import shelfRoutes from "./routes/shelf.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
+import videoRoutes from "./routes/video.js";
 dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -27,6 +28,7 @@ app.use("/api/books", bookRoutes);
 app.use("/api/review", reviewRoutes);
 app.use("/api/shelf", shelfRoutes);
 app.use("/api/recommendations", recommendationRoutes);
+app.use("/api", videoRoutes);
 
 app.get("/", (req, res) => {
   res.send("bookworm server is running successfully...");
