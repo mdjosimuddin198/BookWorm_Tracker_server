@@ -104,7 +104,7 @@ export const getShelf = async (req, res) => {
     }
 
     // reading shelf-এ progress % calculate
-    const readingWithProgress = data.reading.map((book) => ({
+    const readingWithProgress = data.reading?.map((book) => ({
       ...book,
       progressPercent: Math.round((book.pagesRead / book.totalPages) * 100),
     }));

@@ -9,6 +9,8 @@ import reviewRoutes from "./routes/review.js";
 import shelfRoutes from "./routes/shelf.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
 import videoRoutes from "./routes/video.js";
+import userRoutes from "./routes/users.js";
+
 dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -16,7 +18,7 @@ app.use(
   cors({
     origin: ["http://localhost:3000"],
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 app.use(cookieParser());
@@ -29,6 +31,7 @@ app.use("/api/review", reviewRoutes);
 app.use("/api/shelf", shelfRoutes);
 app.use("/api/recommendations", recommendationRoutes);
 app.use("/api", videoRoutes);
+app.use("/api", userRoutes);
 
 app.get("/", (req, res) => {
   res.send("bookworm server is running successfully...");
