@@ -4,7 +4,7 @@ import connectDB from "../config/db.js";
 export const getBooks = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit);
     const startIndex = (page - 1) * limit;
 
     const db = await connectDB();
@@ -79,11 +79,11 @@ export const postBook = async (req, res) => {
     };
 
     const result = await db.collection("books").insertOne(newBook);
-
-    res.status(201).json({
-      message: "Book added successfully",
-      bookId: result.insertedId,
+    const insertedBook = await db.collection("books").findOne({
+      _id: result.insertedId,
     });
+
+    res.status(201).json(insertedBook);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -131,7 +131,7 @@ export const updateBook = async (req, res) => {
         _id: new ObjectId(id),
         userId: req.userId, // 🔐 only owner can edit
       },
-      { $set: updateDoc }
+      { $set: updateDoc },
     );
 
     if (result.matchedCount === 0) {
@@ -140,7 +140,11 @@ export const updateBook = async (req, res) => {
         .json({ message: "Book not found or unauthorized" });
     }
 
-    res.json({ message: "Book updated successfully" });
+    const updatedBook = await db.collection("books").findOne({
+      _id: new ObjectId(id),
+    });
+
+    res.json(updatedBook);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
