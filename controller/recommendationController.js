@@ -11,21 +11,21 @@ export const getRecommendation = async (req, res) => {
     const books = db.collection("books");
 
     // Find user
-    const user = await shelves.findOne({ userEmail: email });
-    if (!user) return res.status(404).json({ message: "User not found" });
-
+    let user = await shelves.findOne({ userEmail: email });
+    if (!user) {
+      user = { read: [], want: [], reading: [] };
+    }
     // Convert bookIds to ObjectId for queries
     const readBooks = (user.read || []).map((b) => new ObjectId(b.bookId));
     const wantBooks = (user.want || []).map((b) => new ObjectId(b.bookId));
     const readingBooks = (user.reading || []).map(
-      (b) => new ObjectId(b.bookId)
+      (b) => new ObjectId(b.bookId),
     );
 
     const excludedBooks = [...readBooks, ...wantBooks, ...readingBooks];
 
-    // ---------------------------
     // Personalized recommendation
-    // ---------------------------
+
     if (readBooks.length >= 3) {
       const readBookDocs = await books
         .find({ _id: { $in: readBooks } })
@@ -54,7 +54,7 @@ export const getRecommendation = async (req, res) => {
 
       const recommendations = candidates.map((book) => {
         const matchedGenres = (book.genres || []).filter((g) =>
-          topGenres.includes(g)
+          topGenres.includes(g),
         );
         return {
           ...book,
@@ -67,15 +67,14 @@ export const getRecommendation = async (req, res) => {
       // Remove duplicates if any (safety)
       const uniqueMap = new Map();
       recommendations.forEach((book) =>
-        uniqueMap.set(book._id.toString(), book)
+        uniqueMap.set(book._id.toString(), book),
       );
 
       return res.json(Array.from(uniqueMap.values()).slice(0, 12));
     }
 
-    // ---------------------------
     // Fallback: user read < 3 books
-    // ---------------------------
+
     const popularBooks = await books
       .find({ _id: { $nin: excludedBooks } })
       .sort({ rating: -1, shelfCount: -1 })
