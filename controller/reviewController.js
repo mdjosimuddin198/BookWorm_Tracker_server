@@ -3,7 +3,6 @@ import connectDB from "../config/db.js";
 
 export const postReview = async (req, res) => {
   const { userEmail, userImage, bookId, comment } = req.body;
-  console.log("email", userEmail);
 
   if (!bookId || !comment)
     return res.status(400).json({ message: "id and comment required" });
@@ -37,7 +36,6 @@ export const approvedReview = async (req, res) => {
   const { id, index } = req.params;
   const idx = parseInt(index);
 
-  console.log("from backend", idx);
   const db = await connectDB();
   const books = await db.collection("books");
   const book = await books.findOne({
@@ -97,13 +95,13 @@ export const deleteReview = async (req, res) => {
       });
     }
 
-    // 🔥 Step 1: index এ null বসানো
+    //  Step 1: index এ null বসানো
     await books.updateOne(
       { _id: new ObjectId(bookId) },
       { $unset: { [`reviews.${reviewIndex}`]: 1 } },
     );
 
-    // 🔥 Step 2: null remove করা
+    // Step 2: null remove করা
     await books.updateOne(
       { _id: new ObjectId(bookId) },
       { $pull: { reviews: null } },
