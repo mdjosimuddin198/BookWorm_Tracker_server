@@ -18,7 +18,12 @@ router.get("/profile", authMiddleware, getProfile);
 
 // Logout
 router.post("/logout", (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    path: "/",
+  });
   res.json({ message: "Logged out successfully" });
 });
 
